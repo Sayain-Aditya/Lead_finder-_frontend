@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Hotel, ServerOff, LayoutList, Columns } from "lucide-react";
+import { Hotel, ServerOff, LayoutList, Columns, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLeads } from "../hooks/useLeads";
 import { exportExcel } from "../utils/exportExcel";
 import SearchBar from "../components/SearchBar";
@@ -9,6 +9,8 @@ import StatsBar from "../components/StatsBar";
 import LeadFilters from "../components/LeadFilters";
 import LeadCard from "../components/LeadCard";
 import KanbanBoard from "../components/KanbanBoard";
+
+const PAGE_SIZE = 10;
 
 export default function HomePage() {
   const { leads, city, setCity, category, setCategory, loading, loadingMsg, error, searchLeads, updateLead, deleteLead, addCallLog } = useLeads();
@@ -18,16 +20,55 @@ export default function HomePage() {
   const [prospectOnly, setProspectOnly] = useState(false);
   const [search, setSearch]             = useState("");
   const [view, setView]                 = useState("list");
+  const [cityFilter, setCityFilter]     = useState("All");
+  const [searchedCities, setSearchedCities] = useState([]);
+  const [page, setPage]                 = useState(1);
+
+  // pre-populate city list from leads already in DB
+  const addCities = (leadList) => {
+    const cities = [...new Set(leadList.map((l) => l.city).filter(Boolean)
+      .map((c) => c.trim().replace(/\b\w/g, (ch) => ch.toUpperCase())))];
+    setSearchedCities((prev) => {
+      const merged = [...prev];
+      cities.forEach((c) => { if (!merged.includes(c)) merged.push(c); });
+      return merged;
+    });
+  };
+
+  // when leads load from DB on mount, populate city filter
+  useEffect(() => { if (leads.length) addCities(leads); }, [leads.length]);
+
+  const handleSearch = async () => {
+    await searchLeads();
+    if (city.trim()) {
+      const normalised = city.trim().replace(/\b\w/g, (c) => c.toUpperCase());
+      setSearchedCities((prev) => prev.includes(normalised) ? prev : [...prev, normalised]);
+      setCityFilter(normalised);
+      setPage(1);
+    }
+  };
 
   const filtered = leads.filter((l) => {
     const q = search.toLowerCase();
     return (
+      (cityFilter === "All" || l.city.toLowerCase() === cityFilter.toLowerCase()) &&
       (!q || l.name.toLowerCase().includes(q) || l.city.toLowerCase().includes(q)) &&
       (catFilter === "All" || l.category === catFilter) &&
       (statusFilter === "All" || l.status === statusFilter) &&
       (!prospectOnly || !l.hasWebsite)
     );
   });
+
+  // count of leads per city (unaffected by other filters)
+  const cityStats = leads.reduce((acc, l) => {
+    const c = (l.city || "").trim().replace(/\b\w/g, (ch) => ch.toUpperCase());
+    if (c) acc[c] = (acc[c] || 0) + 1;
+    return acc;
+  }, {});
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages);
+  const paginated  = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const pipelineValue = leads
     .filter((l) => ["New", "Contacted", "Interested"].includes(l.status))
@@ -74,14 +115,17 @@ export default function HomePage() {
       </motion.div>
 
       <StatsBar stats={stats} statusFilter={statusFilter} prospectOnly={prospectOnly} onStatClick={handleStatClick} />
-      <SearchBar city={city} setCity={setCity} category={category} setCategory={setCategory} loading={loading} loadingMsg={loadingMsg} error={error} onSearch={searchLeads} />
+      <SearchBar city={city} setCity={setCity} category={category} setCategory={setCategory} loading={loading} loadingMsg={loadingMsg} error={error} onSearch={handleSearch} />
 
       {leads.length > 0 && view === "list" && (
         <LeadFilters
-          search={search} setSearch={setSearch}
-          catFilter={catFilter} setCatFilter={setCatFilter}
-          statusFilter={statusFilter} setStatusFilter={setStatusFilter}
-          prospectOnly={prospectOnly} setProspectOnly={setProspectOnly}
+          search={search} setSearch={(v) => { setSearch(v); setPage(1); }}
+          catFilter={catFilter} setCatFilter={(v) => { setCatFilter(v); setPage(1); }}
+          statusFilter={statusFilter} setStatusFilter={(v) => { setStatusFilter(v); setPage(1); }}
+          prospectOnly={prospectOnly} setProspectOnly={(v) => { setProspectOnly(typeof v === "function" ? v(prospectOnly) : v); setPage(1); }}
+          cityFilter={cityFilter} setCityFilter={(v) => { setCityFilter(v); setPage(1); }}
+          searchedCities={searchedCities}
+          cityStats={cityStats}
           count={filtered.length}
           onExport={() => exportExcel(filtered)}
         />
@@ -120,11 +164,43 @@ export default function HomePage() {
           </AnimatePresence>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
             <AnimatePresence>
-              {filtered.map((lead, i) => (
+              {paginated.map((lead, i) => (
                 <LeadCard key={lead.id} lead={lead} onUpdate={updateLead} onDelete={deleteLead} onAddCallLog={addCallLog} index={i} />
               ))}
             </AnimatePresence>
           </div>
+
+          {totalPages > 1 && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 20, marginBottom: 8 }}>
+              <motion.button whileTap={{ scale: 0.93 }} onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage === 1}
+                style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface)", color: safePage === 1 ? "var(--text-dim)" : "var(--text)", cursor: safePage === 1 ? "not-allowed" : "pointer", fontSize: 13 }}>
+                <ChevronLeft size={14} /> Prev
+              </motion.button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+                .reduce((acc, p, idx, arr) => {
+                  if (idx > 0 && p - arr[idx - 1] > 1) acc.push("...");
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === "..." ? (
+                    <span key={`ellipsis-${idx}`} style={{ color: "var(--text-dim)", fontSize: 13, padding: "0 4px" }}>…</span>
+                  ) : (
+                    <motion.button key={p} whileTap={{ scale: 0.93 }} onClick={() => setPage(p)}
+                      style={{ minWidth: 32, padding: "6px 10px", borderRadius: "var(--radius)", border: "1px solid", borderColor: p === safePage ? "var(--accent)" : "var(--border)", background: p === safePage ? "var(--accent-dim)" : "var(--surface)", color: p === safePage ? "var(--accent)" : "var(--text)", cursor: "pointer", fontSize: 13, fontWeight: p === safePage ? 600 : 400 }}>
+                      {p}
+                    </motion.button>
+                  )
+                )}
+
+              <motion.button whileTap={{ scale: 0.93 }} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}
+                style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface)", color: safePage === totalPages ? "var(--text-dim)" : "var(--text)", cursor: safePage === totalPages ? "not-allowed" : "pointer", fontSize: 13 }}>
+                Next <ChevronRight size={14} />
+              </motion.button>
+            </div>
+          )}
         </>
       )}
     </div>

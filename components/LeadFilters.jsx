@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { SlidersHorizontal, Download } from "lucide-react";
 import { CATEGORIES, STATUS_COLORS } from "../constants";
 
-export default function LeadFilters({ search, setSearch, catFilter, setCatFilter, statusFilter, setStatusFilter, prospectOnly, setProspectOnly, count, onExport }) {
+export default function LeadFilters({ search, setSearch, catFilter, setCatFilter, statusFilter, setStatusFilter, prospectOnly, setProspectOnly, cityFilter, setCityFilter, searchedCities, cityStats = {}, count, onExport }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.4 }}>
       <div className="filters-row">
@@ -11,6 +11,14 @@ export default function LeadFilters({ search, setSearch, catFilter, setCatFilter
           <SlidersHorizontal size={13} color="var(--text-dim)" style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search leads…" style={{ paddingLeft: 30, paddingTop: 9, paddingBottom: 9, fontSize: 13 }} />
         </div>
+        {searchedCities.length > 0 && (
+          <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="filter-select">
+            <option value="All">All Cities ({Object.values(cityStats).reduce((a, b) => a + b, 0)})</option>
+            {searchedCities.map((c) => (
+              <option key={c} value={c}>{c} ({cityStats[c] || 0})</option>
+            ))}
+          </select>
+        )}
         <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)} className="filter-select">
           {["All", ...CATEGORIES].map((c) => <option key={c}>{c}</option>)}
         </select>
