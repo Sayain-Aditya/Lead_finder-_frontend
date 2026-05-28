@@ -35,6 +35,7 @@ body {
   color: var(--text);
   min-height: 100vh;
   line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
 }
 
 input, select, textarea, button {
@@ -48,6 +49,7 @@ input, select, textarea {
   color: var(--text);
   border-radius: var(--radius-sm);
   transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -57,7 +59,7 @@ input:focus, select:focus, textarea:focus {
 
 select option { background: var(--surface2); color: var(--text); }
 
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
@@ -71,4 +73,266 @@ code {
   border-radius: 6px;
   font-size: 12px;
   color: var(--accent);
+}
+
+/* ── Layout ─────────────────────────────────────────────── */
+.app-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-logo {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(108,99,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-title { font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+.app-subtitle { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+
+.view-toggle {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.view-toggle-btn {
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+/* ── Stats grid ─────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+/* ── Search bar ─────────────────────────────────────────── */
+.search-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.search-input-wrap {
+  flex: 1 1 0;
+  position: relative;
+  min-width: 0;
+}
+
+.search-input-icon {
+  position: absolute;
+  left: 10px; top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search-input {
+  padding: 9px 10px 9px 32px !important;
+  font-size: 13px !important;
+}
+
+.search-select {
+  flex: 0 0 auto;
+  width: auto !important;
+  min-width: 0;
+  max-width: 120px;
+  padding: 9px 8px;
+  font-size: 12px;
+}
+
+.search-btn {
+  flex: 0 0 auto;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+/* ── Filters row ────────────────────────────────────────── */
+.filters-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-search-wrap {
+  flex: 1 1 140px;
+  position: relative;
+  min-width: 0;
+}
+
+.filter-select { width: auto !important; padding: 9px 10px; font-size: 13px; flex-shrink: 0; }
+
+.export-btn {
+  margin-left: auto;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--green-dim);
+  border: 1px solid rgba(34,197,94,0.25);
+  color: var(--green);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Lead card header ───────────────────────────────────── */
+.lead-header {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lead-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.lead-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  margin-left: auto;
+}
+
+/* ── Lead card expanded ─────────────────────────────────── */
+.lead-detail-grid {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.lead-detail-field { flex: 1 1 130px; min-width: 0; }
+
+/* ── Kanban ─────────────────────────────────────────────── */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Call log ───────────────────────────────────────────── */
+.calllog-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.calllog-type-select { width: auto !important; flex-shrink: 0; padding: 8px 10px; font-size: 12px; }
+.calllog-msg-input   { flex: 1 1 160px; min-width: 0; }
+
+/* ════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ════════════════════════════════════════════════════════ */
+
+/* Tablet — ≤ 768px */
+@media (max-width: 768px) {
+  .app-shell { padding: 1.25rem 1rem; }
+
+  .app-title  { font-size: 18px; }
+  .app-subtitle { font-size: 12px; }
+
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+
+  .search-select { min-width: 110px; }
+
+  .filters-row { gap: 8px; }
+  .export-btn  { margin-left: 0; width: 100%; justify-content: center; }
+
+  .lead-actions { gap: 6px; }
+
+  .kanban-board { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+}
+
+/* Mobile — ≤ 480px */
+@media (max-width: 480px) {
+  .app-shell { padding: 1rem 0.75rem; }
+
+  .app-header { margin-bottom: 20px; }
+  .app-title  { font-size: 16px; }
+  .app-logo   { width: 36px; height: 36px; border-radius: 10px; }
+
+  .view-toggle-btn span { display: none; }
+  .view-toggle-btn { padding: 8px 10px; }
+
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+
+  .search-select { max-width: 90px; font-size: 11px; padding: 9px 5px; }
+  .search-btn    { padding: 9px 10px; font-size: 12px; }
+
+  /* filters: search full width top, then selects + toggle + export in a row */
+  .filter-search-wrap { flex: 1 1 100%; }
+  .filter-select { flex: 1 1 0; min-width: 0; }
+  .export-btn { flex: 1 1 100%; justify-content: center; margin-left: 0; }
+
+  /* lead card: keep actions on same line, shrink buttons */
+  .lead-header { padding: 10px 12px; gap: 8px; }
+  .lead-actions { gap: 4px; }
+  .lead-actions .icon-btn-text { display: none; }
+
+  .lead-detail-grid { flex-direction: column; }
+  .lead-detail-field { flex: unset; width: 100%; }
+
+  .kanban-board { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
+
+  .calllog-input-row { flex-direction: column; }
+  .calllog-type-select { width: 100% !important; }
+}
+
+/* Very small — ≤ 360px */
+@media (max-width: 360px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .kanban-board { grid-template-columns: repeat(1, 1fr); }
 }

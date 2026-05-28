@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BACKEND, CATEGORIES } from "../constants";
+import { BACKEND, CATEGORIES, calcLeadScore } from "../constants";
 
 export const useLeads = () => {
   const [leads, setLeads] = useState([]);
@@ -9,18 +9,14 @@ export const useLeads = () => {
   const [loadingMsg, setLoadingMsg] = useState("");
   const [error, setError] = useState("");
 
-  // Load all leads from DB on mount
   useEffect(() => {
     fetch(`${BACKEND}/leads`)
       .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setLeads(data.map(normalise));
-      })
+      .then((data) => { if (Array.isArray(data)) setLeads(data.map(normalise)); })
       .catch(() => {});
   }, []);
 
-  // MongoDB _id → id, keep rest
-  const normalise = (l) => ({ ...l, id: l._id || l.id });
+  const normalise = (l) => ({ ...l, id: l._id || l.id, callLog: l.callLog || [] });
 
   const updateLead = async (id, field, val) => {
     setLeads((l) => l.map((x) => (x.id === id ? { ...x, [field]: val } : x)));
@@ -33,18 +29,28 @@ export const useLeads = () => {
     } catch {}
   };
 
+  const addCallLog = async (id, entry) => {
+    const lead = leads.find((x) => x.id === id);
+    if (!lead) return;
+    const newLog = [...(lead.callLog || []), { ...entry, date: new Date().toISOString() }];
+    setLeads((l) => l.map((x) => (x.id === id ? { ...x, callLog: newLog } : x)));
+    try {
+      await fetch(`${BACKEND}/leads/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callLog: newLog }),
+      });
+    } catch {}
+  };
+
   const deleteLead = async (id) => {
     setLeads((l) => l.filter((x) => x.id !== id));
-    try {
-      await fetch(`${BACKEND}/leads/${id}`, { method: "DELETE" });
-    } catch {}
+    try { await fetch(`${BACKEND}/leads/${id}`, { method: "DELETE" }); } catch {}
   };
 
   const clearAllLeads = async () => {
     setLeads([]);
-    try {
-      await fetch(`${BACKEND}/leads`, { method: "DELETE" });
-    } catch {}
+    try { await fetch(`${BACKEND}/leads`, { method: "DELETE" }); } catch {}
   };
 
   const searchLeads = async () => {
@@ -59,17 +65,11 @@ export const useLeads = () => {
       const { lat, lng } = await geoRes.json();
 
       setLoadingMsg(`Searching ${category.toLowerCase()}s in ${city}…`);
-      const searchRes = await fetch(
-        `${BACKEND}/search?lat=${lat}&lng=${lng}&keyword=${encodeURIComponent(category)}`
-      );
+      const searchRes = await fetch(`${BACKEND}/search?lat=${lat}&lng=${lng}&keyword=${encodeURIComponent(category)}`);
       if (!searchRes.ok) { const e = await searchRes.json(); throw new Error(e.error); }
       const places = await searchRes.json();
 
-      if (!places.length) {
-        setError(`No results found in ${city}. Try a different category.`);
-        setLoading(false);
-        return;
-      }
+      if (!places.length) { setError(`No results found in ${city}.`); setLoading(false); return; }
 
       const newLeads = [];
       for (let i = 0; i < places.length; i++) {
@@ -86,40 +86,33 @@ export const useLeads = () => {
 
         const isDup = leads.some((x) => x.name === p.name && x.city === city);
         if (!isDup && p.name) {
-          newLeads.push({
-            name: p.name, category, city, address,
-            phone, website,
-            rating: p.rating || 0,
-            hasWebsite: !!website,
+          const lead = {
+            name: p.name, category, city, address, phone, website,
+            rating: p.rating || 0, hasWebsite: !!website,
             status: "New", notes: "", service: "", pitch: "",
-          });
+            priority: "Medium", dealValue: 0, followUpDate: null, callLog: [],
+          };
+          lead.leadScore = calcLeadScore(lead);
+          newLeads.push(lead);
         }
       }
 
       if (newLeads.length) {
-        // Save to DB, get back docs with _id
         const saveRes = await fetch(`${BACKEND}/leads`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ leads: newLeads }),
         });
         const { saved } = await saveRes.json();
-
-        // Reload from DB to get proper _id fields
         const allRes = await fetch(`${BACKEND}/leads`);
         const allLeads = await allRes.json();
         setLeads(allLeads.map(normalise));
-
         if (saved === 0) setError("All results are already in your list.");
       } else {
         setError("All results are already in your list.");
       }
     } catch (e) {
-      setError(
-        e.message.includes("fetch")
-          ? `Cannot connect to backend at ${BACKEND}`
-          : e.message
-      );
+      setError(e.message.includes("fetch") ? `Cannot connect to backend at ${BACKEND}` : e.message);
     }
 
     setLoading(false);
@@ -129,6 +122,6 @@ export const useLeads = () => {
   return {
     leads, city, setCity, category, setCategory,
     loading, loadingMsg, error,
-    searchLeads, updateLead, deleteLead, clearAllLeads,
+    searchLeads, updateLead, deleteLead, clearAllLeads, addCallLog,
   };
 };
