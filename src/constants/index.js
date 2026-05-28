@@ -1,4 +1,4 @@
-export const BACKEND = "http://localhost:3001";
+export const BACKEND = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 
 export const STATUS_COLORS = {
   New:             { bg: "var(--blue-dim)",   color: "var(--blue)",   border: "rgba(59,130,246,0.3)"  },

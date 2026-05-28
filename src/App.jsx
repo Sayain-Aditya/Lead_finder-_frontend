@@ -121,10 +121,10 @@ export default function App() {
               <ServerOff size={26} color="var(--text-dim)" strokeWidth={1.5} />
             </div>
             <div style={{ fontSize: 15, color: "var(--text-muted)", fontWeight: 500 }}>
-              Start the backend then search a city above
+              Search a city above to find leads
             </div>
             <div style={{ fontSize: 13, marginTop: 8, color: "var(--text-dim)" }}>
-              Run <code>node server.js</code> in your terminal
+              Connected to <code>{import.meta.env.VITE_BACKEND_URL || "localhost:3001"}</code>
             </div>
           </motion.div>
         )}

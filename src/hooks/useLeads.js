@@ -117,7 +117,7 @@ export const useLeads = () => {
     } catch (e) {
       setError(
         e.message.includes("fetch")
-          ? "Cannot connect to backend. Make sure server.js is running with: node server.js"
+          ? `Cannot connect to backend at ${BACKEND}`
           : e.message
       );
     }
