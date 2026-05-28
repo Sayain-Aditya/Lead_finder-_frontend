@@ -9,15 +9,15 @@ import {
 import { STATUS_COLORS, SERVICES, BACKEND, PRIORITY_META, CALL_LOG_TYPES } from "../constants";
 
 const Badge = ({ bg, color, border, icon: Icon, children }) => (
-  <span style={{ fontSize: 11, fontWeight: 600, background: bg, color, border: `1px solid ${border}`, borderRadius: 6, padding: "3px 9px", display: "inline-flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}>
-    {Icon && <Icon size={11} strokeWidth={2.5} />}{children}
+  <span style={{ fontSize: 11, fontWeight: 600, background: bg, color, border: `1px solid ${border}`, borderRadius: 6, padding: "3px 8px", display: "inline-flex", alignItems: "center", gap: 3, whiteSpace: "nowrap", flexShrink: 0 }}>
+    {Icon && <Icon size={10} strokeWidth={2.5} />}{children}
   </span>
 );
 
 const IconBtn = ({ onClick, title, color = "var(--text-muted)", bg = "var(--surface2)", disabled, children }) => (
   <motion.button onClick={onClick} title={title} disabled={disabled}
-    whileHover={!disabled ? { scale: 1.08 } : {}} whileTap={!disabled ? { scale: 0.93 } : {}}
-    style={{ background: bg, border: "1px solid var(--border)", borderRadius: 8, padding: "6px 8px", color, cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, opacity: disabled ? 0.5 : 1, whiteSpace: "nowrap", flexShrink: 0 }}
+    whileHover={!disabled ? { scale: 1.06 } : {}} whileTap={!disabled ? { scale: 0.94 } : {}}
+    style={{ background: bg, border: "1px solid var(--border)", borderRadius: 7, padding: "5px 8px", color, cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, opacity: disabled ? 0.5 : 1, whiteSpace: "nowrap", flexShrink: 0 }}
   >{children}</motion.button>
 );
 
@@ -31,8 +31,8 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
   const [logType, setLogType]                 = useState("call");
   const [logMsg, setLogMsg]                   = useState("");
 
-  const sc       = STATUS_COLORS[lead.status] || STATUS_COLORS.New;
-  const pm       = PRIORITY_META[lead.priority] || PRIORITY_META.Medium;
+  const sc        = STATUS_COLORS[lead.status] || STATUS_COLORS.New;
+  const pm        = PRIORITY_META[lead.priority] || PRIORITY_META.Medium;
   const isOverdue = lead.followUpDate && new Date(lead.followUpDate) < new Date();
 
   const openWhatsApp = (e, message) => {
@@ -62,7 +62,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
       const pitch = await callPitchAPI();
       onUpdate(lead.id, "pitch", pitch);
       openWhatsApp(null, pitch);
-    } catch { onUpdate(lead.id, "pitch", "Failed to generate pitch. Please try again."); }
+    } catch { onUpdate(lead.id, "pitch", "Failed to generate pitch."); }
     setGeneratingPitch(false);
   };
 
@@ -73,7 +73,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
     try {
       const pitch = await callPitchAPI();
       onUpdate(lead.id, "pitch", pitch);
-    } catch { onUpdate(lead.id, "pitch", "Failed to generate pitch. Please try again."); }
+    } catch { onUpdate(lead.id, "pitch", "Failed to generate pitch."); }
     setGeneratingPitch(false);
   };
 
@@ -99,63 +99,80 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
       whileHover={{ borderColor: isOverdue ? "var(--red)" : "var(--border-hover)" }}
       style={{ background: "var(--surface)", border: `1px solid ${isOverdue ? "rgba(239,68,68,0.5)" : "var(--border)"}`, borderRadius: "var(--radius)", overflow: "hidden", transition: "border-color 0.2s" }}
     >
-      {/* Header */}
-      <div onClick={() => setIsOpen((o) => !o)} className="lead-header">
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text)" }}>{lead.name}</span>
+      {/* ── Header ── */}
+      <div onClick={() => setIsOpen((o) => !o)} style={{ padding: "12px 14px", cursor: "pointer" }}>
+
+        {/* Row 1: name + badges */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", flex: 1, minWidth: 0 }}>
+            <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", wordBreak: "break-word" }}>{lead.name}</span>
             <Badge bg={pm.bg} color={pm.color} border={pm.border}>{lead.priority}</Badge>
             {!lead.hasWebsite && <Badge bg="var(--orange-dim)" color="var(--orange)" border="rgba(249,115,22,0.3)" icon={WifiOff}>No website</Badge>}
-            {lead.phone && <Badge bg="var(--green-dim)" color="var(--green)" border="rgba(34,197,94,0.3)" icon={Phone}>{lead.phone}</Badge>}
-            {isOverdue && <Badge bg="var(--red-dim)" color="var(--red)" border="rgba(239,68,68,0.3)" icon={AlertCircle}>Follow-up due</Badge>}
+            {isOverdue && <Badge bg="var(--red-dim)" color="var(--red)" border="rgba(239,68,68,0.3)" icon={AlertCircle}>Due</Badge>}
           </div>
-          <div className="lead-meta">
-            <span style={{ display: "flex", alignItems: "center", gap: 4 }}><MapPin size={12} /> {lead.city}</span>
-            <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Tag size={12} /> {lead.category}</span>
-            {lead.rating > 0 && <span style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--yellow)" }}><Star size={12} fill="currentColor" /><span style={{ color: "var(--text-muted)" }}>{lead.rating.toFixed(1)}</span></span>}
-            <span style={{ fontWeight: 700, color: lead.leadScore >= 7 ? "var(--green)" : lead.leadScore >= 4 ? "var(--yellow)" : "var(--red)" }}>
-              Score: {lead.leadScore}/10
-            </span>
-            {lead.dealValue > 0 && (
-              <span style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--green)", fontWeight: 600 }}>
-                <TrendingUp size={12} /> ₹{lead.dealValue >= 1000 ? `${(lead.dealValue / 1000).toFixed(0)}k` : lead.dealValue}
-              </span>
-            )}
-          </div>
+          {/* Chevron always top-right */}
+          <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.25 }} style={{ flexShrink: 0, marginTop: 2 }}>
+            <ChevronDown size={15} color="var(--text-dim)" />
+          </motion.div>
         </div>
 
-        <div className="lead-actions" onClick={(e) => e.stopPropagation()}>
+        {/* Row 2: meta info */}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 3 }}><MapPin size={11} /> {lead.city}</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 3 }}><Tag size={11} /> {lead.category}</span>
+          {lead.phone && <span style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--green)" }}><Phone size={11} /> {lead.phone}</span>}
+          {lead.rating > 0 && <span style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--yellow)" }}><Star size={11} fill="currentColor" /><span style={{ color: "var(--text-muted)" }}>{lead.rating.toFixed(1)}</span></span>}
+          <span style={{ fontWeight: 700, fontSize: 11, color: lead.leadScore >= 7 ? "var(--green)" : lead.leadScore >= 4 ? "var(--yellow)" : "var(--red)" }}>
+            {lead.leadScore}/10
+          </span>
+          {lead.dealValue > 0 && (
+            <span style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--green)", fontWeight: 600 }}>
+              <TrendingUp size={11} /> ₹{lead.dealValue >= 1000 ? `${(lead.dealValue / 1000).toFixed(0)}k` : lead.dealValue}
+            </span>
+          )}
+        </div>
+
+        {/* Row 3: actions — always on their own row, wraps naturally */}
+        <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           {lead.phone && (
-            <IconBtn onClick={lead.pitch ? (e) => openWhatsApp(e, lead.pitch) : generateAndSend}
+            <IconBtn
+              onClick={lead.pitch ? (e) => openWhatsApp(e, lead.pitch) : generateAndSend}
               title={lead.pitch ? "Send pitch via WhatsApp" : "Generate & send via WhatsApp"}
-              color="#22c55e" bg="var(--green-dim)" disabled={generatingPitch}>
+              color="#22c55e" bg="var(--green-dim)" disabled={generatingPitch}
+            >
               {generatingPitch
-                ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Sparkles size={13} /></motion.div>
-                : <MessageCircle size={13} />}
-              {generatingPitch ? "Generating…" : lead.pitch ? "Send on WhatsApp" : "WhatsApp Pitch"}
+                ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Sparkles size={12} /></motion.div>
+                : <MessageCircle size={12} />}
+              {generatingPitch ? "Generating…" : lead.pitch ? "Send WhatsApp" : "WhatsApp Pitch"}
             </IconBtn>
           )}
+
           <IconBtn onClick={generatePitch} title="Generate AI pitch" color="var(--accent)" bg="var(--accent-dim)" disabled={generatingPitch}>
             <motion.div animate={generatingPitch ? { rotate: 360 } : {}} transition={generatingPitch ? { repeat: Infinity, duration: 1, ease: "linear" } : {}}>
-              <Sparkles size={13} />
+              <Sparkles size={12} />
             </motion.div>
             {generatingPitch ? "Writing…" : lead.pitch ? "Regenerate" : "AI Pitch"}
           </IconBtn>
-          <select value={lead.status} onChange={(e) => { e.stopPropagation(); onUpdate(lead.id, "status", e.target.value); }}
-            style={{ width: "auto", fontSize: 12, fontWeight: 600, padding: "5px 10px", background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, borderRadius: 6 }}>
+
+          <select
+            value={lead.status}
+            onChange={(e) => { e.stopPropagation(); onUpdate(lead.id, "status", e.target.value); }}
+            style={{ width: "auto", fontSize: 11, fontWeight: 600, padding: "5px 8px", background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, borderRadius: 6, flexShrink: 0 }}
+          >
             {Object.keys(STATUS_COLORS).map((s) => <option key={s}>{s}</option>)}
           </select>
-          <motion.button onClick={(e) => { e.stopPropagation(); onDelete(lead.id); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", padding: 4, flexShrink: 0 }}>
-            <Trash2 size={15} />
+
+          <motion.button
+            onClick={(e) => { e.stopPropagation(); onDelete(lead.id); }}
+            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", padding: "4px", flexShrink: 0, marginLeft: "auto" }}
+          >
+            <Trash2 size={14} />
           </motion.button>
-          <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.25 }} style={{ flexShrink: 0 }}>
-            <ChevronDown size={16} color="var(--text-dim)" />
-          </motion.div>
         </div>
       </div>
 
-      {/* Expanded panel */}
+      {/* ── Expanded panel ── */}
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div key="panel" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28, ease: "easeInOut" }} style={{ overflow: "hidden" }}>
@@ -165,56 +182,56 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
               <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
                 {TABS.map((tab) => (
                   <button key={tab} onClick={() => setActiveTab(tab)}
-                    style={{ flex: 1, padding: "10px 6px", fontSize: 12, fontWeight: 600, background: "none", border: "none", cursor: "pointer", color: activeTab === tab ? "var(--accent)" : "var(--text-muted)", borderBottom: activeTab === tab ? "2px solid var(--accent)" : "2px solid transparent", textTransform: "capitalize", transition: "color 0.2s" }}>
+                    style={{ flex: 1, padding: "10px 4px", fontSize: 12, fontWeight: 600, background: "none", border: "none", cursor: "pointer", color: activeTab === tab ? "var(--accent)" : "var(--text-muted)", borderBottom: activeTab === tab ? "2px solid var(--accent)" : "2px solid transparent", textTransform: "capitalize", transition: "color 0.2s" }}>
                     {tab === "calllog" ? "Call Log" : tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>
                 ))}
               </div>
 
-              <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+              <div style={{ padding: "14px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
 
                 {/* DETAILS TAB */}
                 {activeTab === "details" && (
                   <>
                     <div className="lead-detail-grid">
                       <div className="lead-detail-field">
-                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 5 }}><Briefcase size={11} /> Service</div>
-                        <select value={lead.service} onChange={(e) => onUpdate(lead.id, "service", e.target.value)} style={{ fontSize: 13, padding: "8px 12px" }}>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 4 }}><Briefcase size={10} /> Service</div>
+                        <select value={lead.service} onChange={(e) => onUpdate(lead.id, "service", e.target.value)} style={{ fontSize: 12, padding: "7px 10px" }}>
                           <option value="">Select…</option>
                           {SERVICES.map((s) => <option key={s}>{s}</option>)}
                         </select>
                       </div>
                       <div className="lead-detail-field">
-                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Priority</div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Priority</div>
                         <select value={lead.priority || "Medium"} onChange={(e) => onUpdate(lead.id, "priority", e.target.value)}
-                          style={{ fontSize: 13, padding: "8px 12px", background: pm.bg, color: pm.color, border: `1px solid ${pm.border}`, borderRadius: "var(--radius-sm)" }}>
+                          style={{ fontSize: 12, padding: "7px 10px", background: pm.bg, color: pm.color, border: `1px solid ${pm.border}`, borderRadius: "var(--radius-sm)" }}>
                           {["High", "Medium", "Low"].map((p) => <option key={p}>{p}</option>)}
                         </select>
                       </div>
                       <div className="lead-detail-field">
-                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 5 }}><TrendingUp size={11} /> Deal Value (₹)</div>
-                        <input type="number" value={lead.dealValue || ""} onChange={(e) => onUpdate(lead.id, "dealValue", Number(e.target.value))} placeholder="e.g. 25000" style={{ fontSize: 13, padding: "8px 12px" }} />
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 4 }}><TrendingUp size={10} /> Deal (₹)</div>
+                        <input type="number" value={lead.dealValue || ""} onChange={(e) => onUpdate(lead.id, "dealValue", Number(e.target.value))} placeholder="e.g. 25000" style={{ fontSize: 12, padding: "7px 10px" }} />
                       </div>
                       <div className="lead-detail-field">
-                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 5 }}><Calendar size={11} /> Follow-up Date</div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 4 }}><Calendar size={10} /> Follow-up</div>
                         <input type="date" value={lead.followUpDate ? new Date(lead.followUpDate).toISOString().split("T")[0] : ""}
                           onChange={(e) => onUpdate(lead.id, "followUpDate", e.target.value || null)}
-                          style={{ fontSize: 13, padding: "8px 12px", colorScheme: "dark", borderColor: isOverdue ? "var(--red)" : undefined }} />
+                          style={{ fontSize: 12, padding: "7px 10px", colorScheme: "dark", borderColor: isOverdue ? "var(--red)" : undefined }} />
                       </div>
                     </div>
 
                     <div>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 5 }}><Globe size={11} /> Website</div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 4 }}><Globe size={10} /> Website</div>
                       <div style={{ fontSize: 13 }}>
                         {lead.website
                           ? <a href={lead.website} target="_blank" rel="noreferrer" style={{ color: "var(--accent)", textDecoration: "none", wordBreak: "break-all" }} onMouseEnter={(e) => e.target.style.textDecoration = "underline"} onMouseLeave={(e) => e.target.style.textDecoration = "none"}>{lead.website}</a>
-                          : <span style={{ color: "var(--orange)", fontStyle: "italic", display: "flex", alignItems: "center", gap: 5 }}><WifiOff size={13} /> No website — great prospect!</span>}
+                          : <span style={{ color: "var(--orange)", fontStyle: "italic", display: "flex", alignItems: "center", gap: 5 }}><WifiOff size={12} /> No website — great prospect!</span>}
                       </div>
                     </div>
 
                     <div>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 5 }}><FileText size={11} /> Notes</div>
-                      <textarea rows={2} value={lead.notes} onChange={(e) => onUpdate(lead.id, "notes", e.target.value)} placeholder="Add notes…" style={{ fontSize: 13, padding: "10px 12px", resize: "vertical" }} />
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 4 }}><FileText size={10} /> Notes</div>
+                      <textarea rows={2} value={lead.notes} onChange={(e) => onUpdate(lead.id, "notes", e.target.value)} placeholder="Add notes…" style={{ fontSize: 13, padding: "9px 10px", resize: "vertical" }} />
                     </div>
                   </>
                 )}
@@ -225,7 +242,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                     {(lead.pitch || generatingPitch) ? (
                       <>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
-                          <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 5 }}><Sparkles size={11} color="var(--accent)" /> AI Pitch</span>
+                          <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 4 }}><Sparkles size={11} color="var(--accent)" /> AI Pitch</span>
                           {lead.pitch && (
                             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                               <motion.button onClick={copyPitch} whileHover={{ scale: 1.05 }} style={{ background: "none", border: "none", cursor: "pointer", color: pitchCopied ? "var(--green)" : "var(--text-muted)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600 }}>
@@ -240,8 +257,8 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                           )}
                         </div>
                         {generatingPitch
-                          ? <div style={{ fontSize: 13, color: "var(--text-muted)", fontStyle: "italic", padding: "10px 14px", background: "var(--surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>Writing your pitch…</div>
-                          : <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, padding: "12px 14px", background: "var(--surface)", border: "1px solid rgba(108,99,255,0.2)", borderRadius: "var(--radius-sm)", whiteSpace: "pre-wrap" }}>{lead.pitch}</div>}
+                          ? <div style={{ fontSize: 13, color: "var(--text-muted)", fontStyle: "italic", padding: "10px 12px", background: "var(--surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>Writing your pitch…</div>
+                          : <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, padding: "12px 12px", background: "var(--surface)", border: "1px solid rgba(108,99,255,0.2)", borderRadius: "var(--radius-sm)", whiteSpace: "pre-wrap" }}>{lead.pitch}</div>}
                       </>
                     ) : (
                       <div style={{ textAlign: "center", padding: "2rem 0" }}>
@@ -262,9 +279,9 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                         {Object.entries(CALL_LOG_TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                       </select>
                       <input value={logMsg} onChange={(e) => setLogMsg(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitLog()}
-                        placeholder="Log a call, message or note…" className="calllog-msg-input" style={{ fontSize: 13, padding: "8px 12px" }} />
+                        placeholder="Log a call, message or note…" className="calllog-msg-input" style={{ fontSize: 13, padding: "8px 10px" }} />
                       <motion.button onClick={submitLog} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                        style={{ padding: "8px 16px", background: "var(--accent)", color: "#fff", border: "none", borderRadius: "var(--radius-sm)", fontSize: 13, fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>
+                        style={{ padding: "8px 14px", background: "var(--accent)", color: "#fff", border: "none", borderRadius: "var(--radius-sm)", fontSize: 13, fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>
                         Add
                       </motion.button>
                     </div>
@@ -274,13 +291,13 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                         <div style={{ fontSize: 13, color: "var(--text-dim)", textAlign: "center", padding: "1.5rem 0" }}>No activity logged yet</div>
                       ) : (
                         [...(lead.callLog || [])].reverse().map((entry, i) => {
-                          const LogIcon  = LOG_ICONS[entry.type] || StickyNote;
+                          const LogIcon   = LOG_ICONS[entry.type] || StickyNote;
                           const typeColor = CALL_LOG_TYPES[entry.type]?.color || "var(--text-muted)";
                           return (
                             <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
                               style={{ display: "flex", gap: 10, padding: "10px 12px", background: "var(--surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>
-                              <div style={{ width: 28, height: 28, borderRadius: 8, background: `${typeColor}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                <LogIcon size={13} color={typeColor} />
+                              <div style={{ width: 26, height: 26, borderRadius: 7, background: `${typeColor}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                <LogIcon size={12} color={typeColor} />
                               </div>
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.4, wordBreak: "break-word" }}>{entry.message}</div>
