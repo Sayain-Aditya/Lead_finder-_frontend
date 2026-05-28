@@ -1,3 +1,4 @@
+"use client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, Loader2, AlertCircle } from "lucide-react";
 import { CATEGORIES } from "../constants";
@@ -18,28 +19,16 @@ export default function SearchBar({ city, setCity, category, setCategory, loadin
       <div className="search-row">
         <div className="search-input-wrap">
           <MapPin size={14} color="var(--text-dim)" className="search-input-icon" />
-          <input
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onSearch()}
-            placeholder="City — e.g. Kanpur, Delhi…"
-            className="search-input"
-          />
+          <input value={city} onChange={(e) => setCity(e.target.value)} onKeyDown={(e) => e.key === "Enter" && onSearch()} placeholder="City — e.g. Kanpur, Delhi…" className="search-input" />
         </div>
         <select value={category} onChange={(e) => setCategory(e.target.value)} className="search-select">
           {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
         </select>
-        <motion.button
-          onClick={onSearch} disabled={loading}
-          whileHover={!loading ? { scale: 1.03 } : {}} whileTap={!loading ? { scale: 0.97 } : {}}
-          className="search-btn"
-          style={{ background: loading ? "var(--surface2)" : "var(--accent)", color: loading ? "var(--text-muted)" : "#fff", cursor: loading ? "not-allowed" : "pointer" }}
-        >
-          {loading ? (
-            <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 size={15} /></motion.div>Searching…</>
-          ) : (
-            <><Search size={15} />Search</>
-          )}
+        <motion.button onClick={onSearch} disabled={loading} whileHover={!loading ? { scale: 1.03 } : {}} whileTap={!loading ? { scale: 0.97 } : {}} className="search-btn"
+          style={{ background: loading ? "var(--surface2)" : "var(--accent)", color: loading ? "var(--text-muted)" : "#fff", cursor: loading ? "not-allowed" : "pointer" }}>
+          {loading
+            ? <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Loader2 size={15} /></motion.div>Searching…</>
+            : <><Search size={15} />Search</>}
         </motion.button>
       </div>
 

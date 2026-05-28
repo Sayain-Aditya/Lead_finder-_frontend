@@ -1,15 +1,16 @@
+"use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Hotel, ServerOff, LayoutList, Columns } from "lucide-react";
-import { useLeads } from "./hooks/useLeads";
-import { exportExcel } from "./utils/exportExcel";
-import SearchBar from "./components/SearchBar";
-import StatsBar from "./components/StatsBar";
-import LeadFilters from "./components/LeadFilters";
-import LeadCard from "./components/LeadCard";
-import KanbanBoard from "./components/KanbanBoard";
+import { useLeads } from "../hooks/useLeads";
+import { exportExcel } from "../utils/exportExcel";
+import SearchBar from "../components/SearchBar";
+import StatsBar from "../components/StatsBar";
+import LeadFilters from "../components/LeadFilters";
+import LeadCard from "../components/LeadCard";
+import KanbanBoard from "../components/KanbanBoard";
 
-export default function App() {
+export default function HomePage() {
   const { leads, city, setCity, category, setCategory, loading, loadingMsg, error, searchLeads, updateLead, deleteLead, addCallLog } = useLeads();
 
   const [catFilter, setCatFilter]       = useState("All");
@@ -48,8 +49,6 @@ export default function App() {
 
   return (
     <div className="app-shell">
-
-      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className="app-header">
           <div className="app-header-left">
@@ -61,7 +60,6 @@ export default function App() {
               <p className="app-subtitle">Find businesses & pitch your web services.</p>
             </div>
           </div>
-
           {leads.length > 0 && (
             <div className="view-toggle">
               {[{ id: "list", Icon: LayoutList, label: "List" }, { id: "kanban", Icon: Columns, label: "Kanban" }].map(({ id, Icon, label }) => (
@@ -76,7 +74,6 @@ export default function App() {
       </motion.div>
 
       <StatsBar stats={stats} statusFilter={statusFilter} prospectOnly={prospectOnly} onStatClick={handleStatClick} />
-
       <SearchBar city={city} setCity={setCity} category={category} setCategory={setCategory} loading={loading} loadingMsg={loadingMsg} error={error} onSearch={searchLeads} />
 
       {leads.length > 0 && view === "list" && (
@@ -90,7 +87,6 @@ export default function App() {
         />
       )}
 
-      {/* Empty state */}
       <AnimatePresence>
         {leads.length === 0 && (
           <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.4 }}
@@ -100,20 +96,18 @@ export default function App() {
             </div>
             <div style={{ fontSize: 15, color: "var(--text-muted)", fontWeight: 500 }}>Search a city above to find leads</div>
             <div style={{ fontSize: 13, marginTop: 8, color: "var(--text-dim)" }}>
-              Connected to <code>{import.meta.env.VITE_BACKEND_URL || "localhost:3001"}</code>
+              Connected to <code>{process.env.NEXT_PUBLIC_BACKEND_URL || "localhost:3001"}</code>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Kanban view */}
       {view === "kanban" && leads.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} style={{ marginTop: 8 }}>
           <KanbanBoard leads={filtered.length > 0 ? filtered : leads} onUpdate={updateLead} />
         </motion.div>
       )}
 
-      {/* List view */}
       {view === "list" && (
         <>
           <AnimatePresence>

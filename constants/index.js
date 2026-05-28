@@ -1,4 +1,4 @@
-export const BACKEND = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+export const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
 export const STATUS_COLORS = {
   New:             { bg: "var(--blue-dim)",   color: "var(--blue)",   border: "rgba(59,130,246,0.3)"  },
@@ -15,10 +15,10 @@ export const PRIORITY_META = {
 };
 
 export const CALL_LOG_TYPES = {
-  call:      { label: "Call",      color: "var(--blue)"   },
-  whatsapp:  { label: "WhatsApp",  color: "var(--green)"  },
-  email:     { label: "Email",     color: "var(--accent)" },
-  note:      { label: "Note",      color: "var(--yellow)" },
+  call:     { label: "Call",     color: "var(--blue)"   },
+  whatsapp: { label: "WhatsApp", color: "var(--green)"  },
+  email:    { label: "Email",    color: "var(--accent)" },
+  note:     { label: "Note",     color: "var(--yellow)" },
 };
 
 export const SERVICES = [
@@ -39,15 +39,14 @@ export const CATEGORIES = [
 ];
 
 export const STAT_META = [
-  { key: "total",     label: "Total Leads",   color: "var(--accent)", glow: "rgba(108,99,255,0.2)" },
-  { key: "noWebsite", label: "No Website",    color: "var(--orange)", glow: "rgba(249,115,22,0.2)" },
-  { key: "pipeline",  label: "Pipeline Value", color: "var(--blue)",  glow: "rgba(59,130,246,0.2)" },
-  { key: "closed",    label: "Deals Closed",  color: "var(--green)",  glow: "rgba(34,197,94,0.2)"  },
+  { key: "total",     label: "Total Leads",    color: "var(--accent)", glow: "rgba(108,99,255,0.2)" },
+  { key: "noWebsite", label: "No Website",     color: "var(--orange)", glow: "rgba(249,115,22,0.2)" },
+  { key: "pipeline",  label: "Pipeline Value", color: "var(--blue)",   glow: "rgba(59,130,246,0.2)" },
+  { key: "closed",    label: "Deals Closed",   color: "var(--green)",  glow: "rgba(34,197,94,0.2)"  },
 ];
 
 export const KANBAN_COLUMNS = ["New", "Contacted", "Interested", "Closed", "Not Interested"];
 
-// Auto-score a lead 1–10
 export const calcLeadScore = (lead) => {
   let score = 0;
   if (!lead.hasWebsite)  score += 3;

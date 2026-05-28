@@ -1,13 +1,14 @@
+"use client";
 import { useState, useEffect } from "react";
 import { BACKEND, CATEGORIES, calcLeadScore } from "../constants";
 
 export const useLeads = () => {
-  const [leads, setLeads] = useState([]);
-  const [city, setCity] = useState("");
+  const [leads, setLeads]       = useState([]);
+  const [city, setCity]         = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]   = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError]       = useState("");
 
   useEffect(() => {
     fetch(`${BACKEND}/leads`)

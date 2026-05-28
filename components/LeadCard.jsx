@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -99,9 +100,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
       whileHover={{ borderColor: isOverdue ? "var(--red)" : "var(--border-hover)" }}
       style={{ background: "var(--surface)", border: `1px solid ${isOverdue ? "rgba(239,68,68,0.5)" : "var(--border)"}`, borderRadius: "var(--radius)", overflow: "hidden", transition: "border-color 0.2s" }}
     >
-      {/* ── Header ── */}
       <div onClick={() => setIsOpen((o) => !o)} style={{ padding: "12px 14px", cursor: "pointer" }}>
-
         {/* Row 1: name + badges */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", flex: 1, minWidth: 0 }}>
@@ -110,74 +109,51 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
             {!lead.hasWebsite && <Badge bg="var(--orange-dim)" color="var(--orange)" border="rgba(249,115,22,0.3)" icon={WifiOff}>No website</Badge>}
             {isOverdue && <Badge bg="var(--red-dim)" color="var(--red)" border="rgba(239,68,68,0.3)" icon={AlertCircle}>Due</Badge>}
           </div>
-          {/* Chevron always top-right */}
           <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.25 }} style={{ flexShrink: 0, marginTop: 2 }}>
             <ChevronDown size={15} color="var(--text-dim)" />
           </motion.div>
         </div>
 
-        {/* Row 2: meta info */}
+        {/* Row 2: meta */}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
           <span style={{ display: "flex", alignItems: "center", gap: 3 }}><MapPin size={11} /> {lead.city}</span>
           <span style={{ display: "flex", alignItems: "center", gap: 3 }}><Tag size={11} /> {lead.category}</span>
           {lead.phone && <span style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--green)" }}><Phone size={11} /> {lead.phone}</span>}
           {lead.rating > 0 && <span style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--yellow)" }}><Star size={11} fill="currentColor" /><span style={{ color: "var(--text-muted)" }}>{lead.rating.toFixed(1)}</span></span>}
-          <span style={{ fontWeight: 700, fontSize: 11, color: lead.leadScore >= 7 ? "var(--green)" : lead.leadScore >= 4 ? "var(--yellow)" : "var(--red)" }}>
-            {lead.leadScore}/10
-          </span>
-          {lead.dealValue > 0 && (
-            <span style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--green)", fontWeight: 600 }}>
-              <TrendingUp size={11} /> ₹{lead.dealValue >= 1000 ? `${(lead.dealValue / 1000).toFixed(0)}k` : lead.dealValue}
-            </span>
-          )}
+          <span style={{ fontWeight: 700, fontSize: 11, color: lead.leadScore >= 7 ? "var(--green)" : lead.leadScore >= 4 ? "var(--yellow)" : "var(--red)" }}>{lead.leadScore}/10</span>
+          {lead.dealValue > 0 && <span style={{ display: "flex", alignItems: "center", gap: 3, color: "var(--green)", fontWeight: 600 }}><TrendingUp size={11} /> ₹{lead.dealValue >= 1000 ? `${(lead.dealValue / 1000).toFixed(0)}k` : lead.dealValue}</span>}
         </div>
 
-        {/* Row 3: actions — always on their own row, wraps naturally */}
+        {/* Row 3: actions */}
         <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           {lead.phone && (
-            <IconBtn
-              onClick={lead.pitch ? (e) => openWhatsApp(e, lead.pitch) : generateAndSend}
+            <IconBtn onClick={lead.pitch ? (e) => openWhatsApp(e, lead.pitch) : generateAndSend}
               title={lead.pitch ? "Send pitch via WhatsApp" : "Generate & send via WhatsApp"}
-              color="#22c55e" bg="var(--green-dim)" disabled={generatingPitch}
-            >
-              {generatingPitch
-                ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Sparkles size={12} /></motion.div>
-                : <MessageCircle size={12} />}
+              color="#22c55e" bg="var(--green-dim)" disabled={generatingPitch}>
+              {generatingPitch ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Sparkles size={12} /></motion.div> : <MessageCircle size={12} />}
               {generatingPitch ? "Generating…" : lead.pitch ? "Send WhatsApp" : "WhatsApp Pitch"}
             </IconBtn>
           )}
-
           <IconBtn onClick={generatePitch} title="Generate AI pitch" color="var(--accent)" bg="var(--accent-dim)" disabled={generatingPitch}>
-            <motion.div animate={generatingPitch ? { rotate: 360 } : {}} transition={generatingPitch ? { repeat: Infinity, duration: 1, ease: "linear" } : {}}>
-              <Sparkles size={12} />
-            </motion.div>
+            <motion.div animate={generatingPitch ? { rotate: 360 } : {}} transition={generatingPitch ? { repeat: Infinity, duration: 1, ease: "linear" } : {}}><Sparkles size={12} /></motion.div>
             {generatingPitch ? "Writing…" : lead.pitch ? "Regenerate" : "AI Pitch"}
           </IconBtn>
-
-          <select
-            value={lead.status}
-            onChange={(e) => { e.stopPropagation(); onUpdate(lead.id, "status", e.target.value); }}
-            style={{ width: "auto", fontSize: 11, fontWeight: 600, padding: "5px 8px", background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, borderRadius: 6, flexShrink: 0 }}
-          >
+          <select value={lead.status} onChange={(e) => { e.stopPropagation(); onUpdate(lead.id, "status", e.target.value); }}
+            style={{ width: "auto", fontSize: 11, fontWeight: 600, padding: "5px 8px", background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, borderRadius: 6, flexShrink: 0 }}>
             {Object.keys(STATUS_COLORS).map((s) => <option key={s}>{s}</option>)}
           </select>
-
-          <motion.button
-            onClick={(e) => { e.stopPropagation(); onDelete(lead.id); }}
-            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", padding: "4px", flexShrink: 0, marginLeft: "auto" }}
-          >
+          <motion.button onClick={(e) => { e.stopPropagation(); onDelete(lead.id); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", padding: "4px", flexShrink: 0, marginLeft: "auto" }}>
             <Trash2 size={14} />
           </motion.button>
         </div>
       </div>
 
-      {/* ── Expanded panel ── */}
+      {/* Expanded panel */}
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div key="panel" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28, ease: "easeInOut" }} style={{ overflow: "hidden" }}>
             <div style={{ borderTop: "1px solid var(--border)", background: "var(--surface2)" }}>
-
               {/* Tabs */}
               <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
                 {TABS.map((tab) => (
@@ -188,8 +164,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                 ))}
               </div>
 
-              <div style={{ padding: "14px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
-
+              <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: 12 }}>
                 {/* DETAILS TAB */}
                 {activeTab === "details" && (
                   <>
@@ -219,16 +194,14 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                           style={{ fontSize: 12, padding: "7px 10px", colorScheme: "dark", borderColor: isOverdue ? "var(--red)" : undefined }} />
                       </div>
                     </div>
-
                     <div>
                       <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 4 }}><Globe size={10} /> Website</div>
                       <div style={{ fontSize: 13 }}>
                         {lead.website
-                          ? <a href={lead.website} target="_blank" rel="noreferrer" style={{ color: "var(--accent)", textDecoration: "none", wordBreak: "break-all" }} onMouseEnter={(e) => e.target.style.textDecoration = "underline"} onMouseLeave={(e) => e.target.style.textDecoration = "none"}>{lead.website}</a>
+                          ? <a href={lead.website} target="_blank" rel="noreferrer" style={{ color: "var(--accent)", textDecoration: "none", wordBreak: "break-all" }}>{lead.website}</a>
                           : <span style={{ color: "var(--orange)", fontStyle: "italic", display: "flex", alignItems: "center", gap: 5 }}><WifiOff size={12} /> No website — great prospect!</span>}
                       </div>
                     </div>
-
                     <div>
                       <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 4 }}><FileText size={10} /> Notes</div>
                       <textarea rows={2} value={lead.notes} onChange={(e) => onUpdate(lead.id, "notes", e.target.value)} placeholder="Add notes…" style={{ fontSize: 13, padding: "9px 10px", resize: "vertical" }} />
@@ -249,7 +222,8 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                                 {pitchCopied ? <><Check size={11} /> Copied!</> : <><Copy size={11} /> Copy</>}
                               </motion.button>
                               {lead.phone && (
-                                <motion.button onClick={(e) => openWhatsApp(e, lead.pitch)} whileHover={{ scale: 1.05 }} style={{ background: "var(--green-dim)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 6, cursor: "pointer", color: "var(--green)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, padding: "3px 8px" }}>
+                                <motion.button onClick={(e) => openWhatsApp(e, lead.pitch)} whileHover={{ scale: 1.05 }}
+                                  style={{ background: "var(--green-dim)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 6, cursor: "pointer", color: "var(--green)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, padding: "3px 8px" }}>
                                   <Send size={11} /> Send via WhatsApp
                                 </motion.button>
                               )}
@@ -258,7 +232,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                         </div>
                         {generatingPitch
                           ? <div style={{ fontSize: 13, color: "var(--text-muted)", fontStyle: "italic", padding: "10px 12px", background: "var(--surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>Writing your pitch…</div>
-                          : <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, padding: "12px 12px", background: "var(--surface)", border: "1px solid rgba(108,99,255,0.2)", borderRadius: "var(--radius-sm)", whiteSpace: "pre-wrap" }}>{lead.pitch}</div>}
+                          : <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, padding: "12px", background: "var(--surface)", border: "1px solid rgba(108,99,255,0.2)", borderRadius: "var(--radius-sm)", whiteSpace: "pre-wrap" }}>{lead.pitch}</div>}
                       </>
                     ) : (
                       <div style={{ textAlign: "center", padding: "2rem 0" }}>
@@ -285,7 +259,6 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                         Add
                       </motion.button>
                     </div>
-
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {(lead.callLog || []).length === 0 ? (
                         <div style={{ fontSize: 13, color: "var(--text-dim)", textAlign: "center", padding: "1.5rem 0" }}>No activity logged yet</div>
@@ -312,7 +285,6 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                     </div>
                   </div>
                 )}
-
               </div>
             </div>
           </motion.div>
