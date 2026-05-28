@@ -85,7 +85,7 @@ export const useLeads = () => {
           address = det.formatted_address || address;
         } catch {}
 
-        const isDup = leads.some((x) => x.name === p.name && x.city === city);
+        const isDup = leads.some((x) => x.name === p.name && x.city.toLowerCase() === city.trim().toLowerCase());
         if (!isDup && p.name) {
           const lead = {
             name: p.name, category, city, address, phone, website,
