@@ -9,11 +9,12 @@ import StatsBar from "../components/StatsBar";
 import LeadFilters from "../components/LeadFilters";
 import LeadCard from "../components/LeadCard";
 import KanbanBoard from "../components/KanbanBoard";
+import { StatsSkeleton, LeadListSkeleton, KanbanSkeleton } from "../components/SkeletonLoaders";
 
 const PAGE_SIZE = 10;
 
 export default function HomePage() {
-  const { leads, city, setCity, category, setCategory, loading, loadingMsg, error, searchLeads, updateLead, deleteLead, addCallLog } = useLeads();
+  const { leads, city, setCity, category, setCategory, loading, initialLoading, loadingMsg, error, searchLeads, updateLead, deleteLead, addCallLog } = useLeads();
 
   const [catFilter, setCatFilter]       = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -82,11 +83,14 @@ export default function HomePage() {
   };
 
   const handleStatClick = (key) => {
+    if (initialLoading || loading) return;
     if (key === "total")     { setStatusFilter("All"); setCatFilter("All"); setProspectOnly(false); }
     if (key === "noWebsite") { setProspectOnly((v) => !v); }
     if (key === "pipeline")  { setStatusFilter((s) => ["Contacted", "Interested"].includes(s) ? "All" : "Contacted"); }
     if (key === "closed")    { setStatusFilter((s) => s === "Closed" ? "All" : "Closed"); }
   };
+
+  const showingSkeleton = initialLoading || loading;
 
   return (
     <div className="app-shell">
@@ -101,7 +105,7 @@ export default function HomePage() {
               <p className="app-subtitle">Find qualified local businesses and manage outreach.</p>
             </div>
           </div>
-          {leads.length > 0 && (
+          {!initialLoading && leads.length > 0 && (
             <div className="view-toggle">
               {[{ id: "list", Icon: LayoutList, label: "List" }, { id: "kanban", Icon: Columns, label: "Kanban" }].map(({ id, Icon, label }) => (
                 <motion.button key={id} onClick={() => setView(id)} whileTap={{ scale: 0.95 }} className="view-toggle-btn"
@@ -114,10 +118,14 @@ export default function HomePage() {
         </div>
       </motion.div>
 
-      <StatsBar stats={stats} statusFilter={statusFilter} prospectOnly={prospectOnly} onStatClick={handleStatClick} />
+      {initialLoading ? (
+        <StatsSkeleton />
+      ) : (
+        <StatsBar stats={stats} statusFilter={statusFilter} prospectOnly={prospectOnly} onStatClick={handleStatClick} />
+      )}
       <SearchBar city={city} setCity={setCity} category={category} setCategory={setCategory} loading={loading} loadingMsg={loadingMsg} error={error} onSearch={handleSearch} />
 
-      {leads.length > 0 && view === "list" && (
+      {!showingSkeleton && leads.length > 0 && view === "list" && (
         <LeadFilters
           search={search} setSearch={(v) => { setSearch(v); setPage(1); }}
           catFilter={catFilter} setCatFilter={(v) => { setCatFilter(v); setPage(1); }}
@@ -132,7 +140,7 @@ export default function HomePage() {
       )}
 
       <AnimatePresence>
-        {leads.length === 0 && (
+        {!showingSkeleton && leads.length === 0 && (
           <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.4 }}
             style={{ textAlign: "center", padding: "4rem 1rem", border: "1px dashed var(--border)", borderRadius: "var(--radius)", marginTop: 16, background: "rgba(255,253,248,0.52)" }}>
             <div style={{ width: 56, height: 56, borderRadius: 12, background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", boxShadow: "var(--shadow)" }}>
@@ -146,7 +154,13 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {view === "kanban" && leads.length > 0 && (
+      {view === "kanban" && showingSkeleton && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} style={{ marginTop: 8 }}>
+          <KanbanSkeleton />
+        </motion.div>
+      )}
+
+      {view === "kanban" && !showingSkeleton && leads.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} style={{ marginTop: 8 }}>
           <KanbanBoard leads={filtered.length > 0 ? filtered : leads} onUpdate={updateLead} />
         </motion.div>
@@ -155,22 +169,26 @@ export default function HomePage() {
       {view === "list" && (
         <>
           <AnimatePresence>
-            {leads.length > 0 && filtered.length === 0 && (
+            {!showingSkeleton && leads.length > 0 && filtered.length === 0 && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 style={{ textAlign: "center", padding: "3rem 1rem", border: "1px dashed var(--border)", borderRadius: "var(--radius)", marginTop: 8, color: "var(--text-muted)", fontSize: 14 }}>
                 No leads match the current filters.
               </motion.div>
             )}
           </AnimatePresence>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
-            <AnimatePresence>
-              {paginated.map((lead, i) => (
-                <LeadCard key={lead.id} lead={lead} onUpdate={updateLead} onDelete={deleteLead} onAddCallLog={addCallLog} index={i} />
-              ))}
-            </AnimatePresence>
-          </div>
+          {showingSkeleton ? (
+            <LeadListSkeleton count={initialLoading ? 5 : 8} />
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+              <AnimatePresence>
+                {paginated.map((lead, i) => (
+                  <LeadCard key={lead.id} lead={lead} onUpdate={updateLead} onDelete={deleteLead} onAddCallLog={addCallLog} index={i} />
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
 
-          {totalPages > 1 && (
+          {!showingSkeleton && totalPages > 1 && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 20, marginBottom: 8 }}>
               <motion.button whileTap={{ scale: 0.93 }} onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage === 1}
                 style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface)", color: safePage === 1 ? "var(--text-dim)" : "var(--text)", cursor: safePage === 1 ? "not-allowed" : "pointer", fontSize: 13 }}>
@@ -186,7 +204,7 @@ export default function HomePage() {
                 }, [])
                 .map((p, idx) =>
                   p === "..." ? (
-                    <span key={`ellipsis-${idx}`} style={{ color: "var(--text-dim)", fontSize: 13, padding: "0 4px" }}>…</span>
+                    <span key={`ellipsis-${idx}`} style={{ color: "var(--text-dim)", fontSize: 13, padding: "0 4px" }}>...</span>
                   ) : (
                     <motion.button key={p} whileTap={{ scale: 0.93 }} onClick={() => setPage(p)}
                       style={{ minWidth: 32, padding: "6px 10px", borderRadius: "var(--radius)", border: "1px solid", borderColor: p === safePage ? "var(--accent)" : "var(--border)", background: p === safePage ? "var(--accent-dim)" : "var(--surface)", color: p === safePage ? "var(--accent)" : "var(--text)", cursor: "pointer", fontSize: 13, fontWeight: p === safePage ? 600 : 400 }}>

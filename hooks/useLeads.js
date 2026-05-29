@@ -7,6 +7,7 @@ export const useLeads = () => {
   const [city, setCity]         = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [loading, setLoading]   = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [loadingMsg, setLoadingMsg] = useState("");
   const [error, setError]       = useState("");
 
@@ -14,7 +15,8 @@ export const useLeads = () => {
     fetch(`${BACKEND}/leads`)
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setLeads(data.map(normalise)); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setInitialLoading(false));
   }, []);
 
   const normalise = (l) => ({ ...l, id: l._id || l.id, callLog: l.callLog || [] });
@@ -60,12 +62,12 @@ export const useLeads = () => {
     setError("");
 
     try {
-      setLoadingMsg("Finding city location…");
+      setLoadingMsg("Finding city location...");
       const geoRes = await fetch(`${BACKEND}/geocode?city=${encodeURIComponent(city)}`);
       if (!geoRes.ok) { const e = await geoRes.json(); throw new Error(e.error); }
       const { lat, lng } = await geoRes.json();
 
-      setLoadingMsg(`Searching ${category.toLowerCase()}s in ${city}…`);
+      setLoadingMsg(`Searching ${category.toLowerCase()}s in ${city}...`);
       const searchRes = await fetch(`${BACKEND}/search?lat=${lat}&lng=${lng}&keyword=${encodeURIComponent(category)}`);
       if (!searchRes.ok) { const e = await searchRes.json(); throw new Error(e.error); }
       const places = await searchRes.json();
@@ -75,7 +77,7 @@ export const useLeads = () => {
       const newLeads = [];
       for (let i = 0; i < places.length; i++) {
         const p = places[i];
-        setLoadingMsg(`Getting details ${i + 1} of ${places.length}…`);
+        setLoadingMsg(`Getting details ${i + 1} of ${places.length}...`);
         let phone = "", website = "", address = p.vicinity || "";
         try {
           const detRes = await fetch(`${BACKEND}/details?place_id=${p.place_id}`);
@@ -122,7 +124,7 @@ export const useLeads = () => {
 
   return {
     leads, city, setCity, category, setCategory,
-    loading, loadingMsg, error,
+    loading, initialLoading, loadingMsg, error,
     searchLeads, updateLead, deleteLead, clearAllLeads, addCallLog,
   };
 };
