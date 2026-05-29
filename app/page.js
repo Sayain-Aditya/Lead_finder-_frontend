@@ -94,11 +94,11 @@ export default function HomePage() {
         <div className="app-header">
           <div className="app-header-left">
             <div className="app-logo">
-              <Hotel size={20} color="var(--accent)" strokeWidth={1.8} />
+              <Hotel size={20} color="#fffdf8" strokeWidth={1.8} />
             </div>
             <div>
               <h1 className="app-title">Hospitality Lead Finder</h1>
-              <p className="app-subtitle">Find businesses & pitch your web services.</p>
+              <p className="app-subtitle">Find qualified local businesses and manage outreach.</p>
             </div>
           </div>
           {leads.length > 0 && (
@@ -134,8 +134,8 @@ export default function HomePage() {
       <AnimatePresence>
         {leads.length === 0 && (
           <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.4 }}
-            style={{ textAlign: "center", padding: "4rem 1rem", border: "1px dashed var(--border)", borderRadius: "var(--radius)", marginTop: 16 }}>
-            <div style={{ width: 56, height: 56, borderRadius: 16, background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            style={{ textAlign: "center", padding: "4rem 1rem", border: "1px dashed var(--border)", borderRadius: "var(--radius)", marginTop: 16, background: "rgba(255,253,248,0.52)" }}>
+            <div style={{ width: 56, height: 56, borderRadius: 12, background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", boxShadow: "var(--shadow)" }}>
               <ServerOff size={26} color="var(--text-dim)" strokeWidth={1.5} />
             </div>
             <div style={{ fontSize: 15, color: "var(--text-muted)", fontWeight: 500 }}>Search a city above to find leads</div>

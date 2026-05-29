@@ -25,8 +25,8 @@ export default function KanbanBoard({ leads, onUpdate }) {
                 const isOverdue = lead.followUpDate && new Date(lead.followUpDate) < new Date();
                 return (
                   <motion.div key={lead.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-                    whileHover={{ y: -2, boxShadow: "0 4px 16px rgba(0,0,0,0.3)" }}
-                    style={{ background: "var(--surface)", border: `1px solid ${isOverdue ? "var(--red)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", padding: "10px 12px" }}>
+                    whileHover={{ y: -2, boxShadow: "0 12px 24px rgba(50,43,32,0.1)" }}
+                    style={{ background: "rgba(255,253,248,0.9)", border: `1px solid ${isOverdue ? "var(--red)" : "var(--border)"}`, borderRadius: "var(--radius-sm)", padding: "10px 12px" }}>
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6, marginBottom: 6 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", lineHeight: 1.3 }}>{lead.name}</span>
                       <span style={{ fontSize: 10, fontWeight: 700, color: pm.color, background: pm.bg, border: `1px solid ${pm.border}`, borderRadius: 4, padding: "2px 6px", whiteSpace: "nowrap", flexShrink: 0 }}>{lead.priority}</span>

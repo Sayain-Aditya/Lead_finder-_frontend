@@ -2,7 +2,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "Hospitality Lead Finder",
-  description: "Find hotels, restaurants & cafes — pitch them your web & software services.",
+  description: "Find qualified local hospitality leads and manage outreach.",
 };
 
 export default function RootLayout({ children }) {

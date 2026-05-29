@@ -18,7 +18,7 @@ const Badge = ({ bg, color, border, icon: Icon, children }) => (
 const IconBtn = ({ onClick, title, color = "var(--text-muted)", bg = "var(--surface2)", disabled, children }) => (
   <motion.button onClick={onClick} title={title} disabled={disabled}
     whileHover={!disabled ? { scale: 1.06 } : {}} whileTap={!disabled ? { scale: 0.94 } : {}}
-    style={{ background: bg, border: "1px solid var(--border)", borderRadius: 7, padding: "5px 8px", color, cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, opacity: disabled ? 0.5 : 1, whiteSpace: "nowrap", flexShrink: 0 }}
+    style={{ background: bg, border: "1px solid var(--border)", borderRadius: 7, padding: "5px 8px", color, cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, opacity: disabled ? 0.5 : 1, whiteSpace: "nowrap", flexShrink: 0 }}
   >{children}</motion.button>
 );
 
@@ -98,7 +98,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -40 }}
       transition={{ delay: index * 0.04, duration: 0.35, ease: "easeOut" }}
       whileHover={{ borderColor: isOverdue ? "var(--red)" : "var(--border-hover)" }}
-      style={{ background: "var(--surface)", border: `1px solid ${isOverdue ? "rgba(239,68,68,0.5)" : "var(--border)"}`, borderRadius: "var(--radius)", overflow: "hidden", transition: "border-color 0.2s" }}
+      style={{ background: "rgba(255,253,248,0.9)", border: `1px solid ${isOverdue ? "rgba(163,74,64,0.45)" : "var(--border)"}`, borderRadius: "var(--radius)", overflow: "hidden", transition: "border-color 0.2s, box-shadow 0.2s", boxShadow: "0 10px 28px rgba(50,43,32,0.06)" }}
     >
       <div onClick={() => setIsOpen((o) => !o)} style={{ padding: "12px 14px", cursor: "pointer" }}>
         {/* Row 1: name + badges */}
@@ -106,8 +106,8 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", flex: 1, minWidth: 0 }}>
             <span style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", wordBreak: "break-word" }}>{lead.name}</span>
             <Badge bg={pm.bg} color={pm.color} border={pm.border}>{lead.priority}</Badge>
-            {!lead.hasWebsite && <Badge bg="var(--orange-dim)" color="var(--orange)" border="rgba(249,115,22,0.3)" icon={WifiOff}>No website</Badge>}
-            {isOverdue && <Badge bg="var(--red-dim)" color="var(--red)" border="rgba(239,68,68,0.3)" icon={AlertCircle}>Due</Badge>}
+            {!lead.hasWebsite && <Badge bg="var(--orange-dim)" color="var(--orange)" border="rgba(154,91,32,0.22)" icon={WifiOff}>No website</Badge>}
+            {isOverdue && <Badge bg="var(--red-dim)" color="var(--red)" border="rgba(163,74,64,0.22)" icon={AlertCircle}>Due</Badge>}
           </div>
           <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.25 }} style={{ flexShrink: 0, marginTop: 2 }}>
             <ChevronDown size={15} color="var(--text-dim)" />
@@ -129,7 +129,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
           {lead.phone && (
             <IconBtn onClick={lead.pitch ? (e) => openWhatsApp(e, lead.pitch) : generateAndSend}
               title={lead.pitch ? "Send pitch via WhatsApp" : "Generate & send via WhatsApp"}
-              color="#22c55e" bg="var(--green-dim)" disabled={generatingPitch}>
+              color="var(--green)" bg="var(--green-dim)" disabled={generatingPitch}>
               {generatingPitch ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}><Sparkles size={12} /></motion.div> : <MessageCircle size={12} />}
               {generatingPitch ? "Generating…" : lead.pitch ? "Send WhatsApp" : "WhatsApp Pitch"}
             </IconBtn>
@@ -191,7 +191,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                         <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 4 }}><Calendar size={10} /> Follow-up</div>
                         <input type="date" value={lead.followUpDate ? new Date(lead.followUpDate).toISOString().split("T")[0] : ""}
                           onChange={(e) => onUpdate(lead.id, "followUpDate", e.target.value || null)}
-                          style={{ fontSize: 12, padding: "7px 10px", colorScheme: "dark", borderColor: isOverdue ? "var(--red)" : undefined }} />
+                          style={{ fontSize: 12, padding: "7px 10px", colorScheme: "light", borderColor: isOverdue ? "var(--red)" : undefined }} />
                       </div>
                     </div>
                     <div>
@@ -223,7 +223,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                               </motion.button>
                               {lead.phone && (
                                 <motion.button onClick={(e) => openWhatsApp(e, lead.pitch)} whileHover={{ scale: 1.05 }}
-                                  style={{ background: "var(--green-dim)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 6, cursor: "pointer", color: "var(--green)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, padding: "3px 8px" }}>
+                                  style={{ background: "var(--green-dim)", border: "1px solid rgba(31,111,101,0.22)", borderRadius: 6, cursor: "pointer", color: "var(--green)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, padding: "3px 8px" }}>
                                   <Send size={11} /> Send via WhatsApp
                                 </motion.button>
                               )}
@@ -232,7 +232,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                         </div>
                         {generatingPitch
                           ? <div style={{ fontSize: 13, color: "var(--text-muted)", fontStyle: "italic", padding: "10px 12px", background: "var(--surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>Writing your pitch…</div>
-                          : <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, padding: "12px", background: "var(--surface)", border: "1px solid rgba(108,99,255,0.2)", borderRadius: "var(--radius-sm)", whiteSpace: "pre-wrap" }}>{lead.pitch}</div>}
+                          : <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, padding: "12px", background: "var(--surface)", border: "1px solid rgba(31,111,101,0.18)", borderRadius: "var(--radius-sm)", whiteSpace: "pre-wrap" }}>{lead.pitch}</div>}
                       </>
                     ) : (
                       <div style={{ textAlign: "center", padding: "2rem 0" }}>
@@ -255,7 +255,7 @@ export default function LeadCard({ lead, onUpdate, onDelete, onAddCallLog, index
                       <input value={logMsg} onChange={(e) => setLogMsg(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitLog()}
                         placeholder="Log a call, message or note…" className="calllog-msg-input" style={{ fontSize: 13, padding: "8px 10px" }} />
                       <motion.button onClick={submitLog} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                        style={{ padding: "8px 14px", background: "var(--accent)", color: "#fff", border: "none", borderRadius: "var(--radius-sm)", fontSize: 13, fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>
+                        style={{ padding: "8px 14px", background: "var(--accent)", color: "#fffdf8", border: "none", borderRadius: "var(--radius-sm)", fontSize: 13, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
                         Add
                       </motion.button>
                     </div>
